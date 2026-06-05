@@ -6,7 +6,19 @@
 /* ---- 1. SUBMISSION ENDPOINT ----
    Paste your Google Apps Script Web App URL between the quotes.
    (See README.md → "Connect Google Sheets")                              */
-const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxe_U_8WoGfKVtNkcUoiRPTSw52NixTSh7g42Eos4uael3jvf2newANXN3QVklIO-TseQ/exec";
+const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxbm-VjvKyND0aoaj_H1iGWta2M21xX_CsGn-4MacDtPykeRJJm-8eUWyTe-Ttim-egaA/exec";
+
+/* ---- 1b. PARTICIPATION CERTIFICATE ----
+   Shown instantly after a participant submits. The name is collected only
+   for the certificate and is NOT sent with the (anonymous) research data.
+   Edit the issuer details below to your own name / organization.          */
+const CERT = {
+  enabled:   true,
+  org:       "Professionals Talk · Workforce Research",   // top line on the certificate
+  issuerName:"Abdulla Al Babul",                          // printed above the signature line
+  issuerTitle:"Principal Investigator",                   // printed below the name
+  idPrefix:  "MEF"                                        // certificate no. -> MEF-2026-XXXXXX
+};
 
 /* ---- 2. FORCED-DISTRIBUTION SHAPE (Guided Q-Sort) ----
    Columns run from -5 to +5. The numbers below are how many cards each
@@ -183,6 +195,24 @@ const I18N = {
     submit: "Submit my responses →", submitting: "Sending…",
     doneTitle: "Thank you", doneMsg: "Your perspective has been recorded. It will help shape a Bangladesh-specific Meeting Excellence Framework.",
     download: "Download my responses",
+    certEyebrow: "Your participation certificate",
+    certNamePrompt: "Type your name as it should appear on the certificate:",
+    certNamePlaceholder: "Your full name",
+    certGenerate: "Create my certificate",
+    certDownload: "⬇ Download (PNG)",
+    certPrint: "🖨 Print / Save as PDF",
+    certNameNote: "Used only for your certificate — it is not sent with your anonymous responses.",
+    certHeading: "Certificate of Participation",
+    certPresentedTo: "This certificate is proudly presented to",
+    certBody: "in recognition of valued participation in the academic research study",
+    certStudyTitle: "From Meeting Fatigue to High-Performance Teams: Understanding Workplace Meeting Practices in Bangladesh",
+    certMethodGuided: "ranking 40 perspectives through a guided Q-sort",
+    certMethodFlex: "rating 40 perspectives on workplace meetings",
+    certContribution: "Your voice helps shape a Bangladesh-specific Meeting Excellence Framework.",
+    certVerified: "VERIFIED PARTICIPANT",
+    certIssued: "Issued", certCertNo: "Certificate No.",
+    certFallbackName: "Valued Participant",
+    certNeedName: "Please type your name first.",
     errTitle: "Couldn't send", errMsg: "Something went wrong sending your responses. Your answers are saved on this device — please check your connection and try again.",
     retry: "Try again",
     placeholderWhy: "Optional — a sentence or two…",
@@ -226,6 +256,24 @@ const I18N = {
     submit: "আমার উত্তর জমা দিন →", submitting: "পাঠানো হচ্ছে…",
     doneTitle: "ধন্যবাদ", doneMsg: "আপনার দৃষ্টিভঙ্গি লিপিবদ্ধ হয়েছে। এটি বাংলাদেশ-নির্দিষ্ট মিটিং এক্সিলেন্স ফ্রেমওয়ার্ক গঠনে সাহায্য করবে।",
     download: "আমার উত্তর ডাউনলোড করুন",
+    certEyebrow: "আপনার অংশগ্রহণ সনদ",
+    certNamePrompt: "সনদে যে নাম দেখাতে চান তা লিখুন:",
+    certNamePlaceholder: "আপনার পূর্ণ নাম",
+    certGenerate: "আমার সনদ তৈরি করুন",
+    certDownload: "⬇ ডাউনলোড (PNG)",
+    certPrint: "🖨 প্রিন্ট / PDF সংরক্ষণ",
+    certNameNote: "শুধু আপনার সনদের জন্য ব্যবহৃত — আপনার গোপন উত্তরের সাথে পাঠানো হয় না।",
+    certHeading: "অংশগ্রহণ সনদ",
+    certPresentedTo: "এই সনদটি সগর্বে প্রদান করা হলো",
+    certBody: "একাডেমিক গবেষণায় মূল্যবান অংশগ্রহণের স্বীকৃতিস্বরূপ",
+    certStudyTitle: "সভার ক্লান্তি থেকে উচ্চ-কর্মক্ষম দল: বাংলাদেশের কর্মক্ষেত্রে সভা অনুশীলন বোঝা",
+    certMethodGuided: "নির্দেশিত কিউ-সর্টে ৪০টি দৃষ্টিভঙ্গি সাজিয়ে",
+    certMethodFlex: "কর্মক্ষেত্রের সভা নিয়ে ৪০টি দৃষ্টিভঙ্গি মূল্যায়ন করে",
+    certContribution: "আপনার কণ্ঠস্বর বাংলাদেশ-নির্দিষ্ট মিটিং এক্সিলেন্স ফ্রেমওয়ার্ক গঠনে সাহায্য করে।",
+    certVerified: "যাচাইকৃত অংশগ্রহণকারী",
+    certIssued: "প্রদানের তারিখ", certCertNo: "সনদ নম্বর",
+    certFallbackName: "সম্মানিত অংশগ্রহণকারী",
+    certNeedName: "অনুগ্রহ করে প্রথমে আপনার নাম লিখুন।",
     errTitle: "পাঠানো যায়নি", errMsg: "আপনার উত্তর পাঠাতে সমস্যা হয়েছে। উত্তরগুলো এই ডিভাইসে সংরক্ষিত আছে — সংযোগ দেখে আবার চেষ্টা করুন।",
     retry: "আবার চেষ্টা করুন",
     placeholderWhy: "ঐচ্ছিক — এক-দুই বাক্য…",
