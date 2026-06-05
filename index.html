@@ -248,6 +248,27 @@
       <div class="done-mark">✓</div>
       <h2 class="h2" data-i18n="doneTitle">Thank you</h2>
       <p class="muted-p" id="doneMsg" data-i18n="doneMsg">Your perspective has been recorded. It will help shape a Bangladesh-specific Meeting Excellence Framework.</p>
+
+      <!-- ----- participation certificate ----- -->
+      <div class="cert-zone" id="certZone" hidden>
+        <p class="cert-eyebrow" data-i18n="certEyebrow">Your participation certificate</p>
+
+        <div class="cert-name-row" id="certNameRow">
+          <label class="field-label" for="certName" data-i18n="certNamePrompt">Type your name as it should appear on the certificate:</label>
+          <input type="text" id="certName" class="cert-input" maxlength="60" autocomplete="name" data-i18n-ph="certNamePlaceholder" placeholder="Your full name" />
+          <button class="cta" id="certGenBtn" type="button" data-i18n="certGenerate">Create my certificate</button>
+          <p class="tiny" data-i18n="certNameNote">Used only for your certificate — it is not sent with your anonymous responses.</p>
+        </div>
+
+        <div class="cert-preview" id="certPreview" hidden>
+          <canvas id="certCanvas" class="cert-canvas" aria-label="Participation certificate"></canvas>
+          <div class="cert-actions">
+            <button class="cta" id="certDownloadBtn" type="button" data-i18n="certDownload">⬇ Download (PNG)</button>
+            <button class="ghost" id="certPrintBtn" type="button" data-i18n="certPrint">🖨 Print / Save as PDF</button>
+          </div>
+        </div>
+      </div>
+
       <div class="done-actions">
         <button class="ghost" id="downloadBtn" type="button" data-i18n="download">Download my responses</button>
       </div>
