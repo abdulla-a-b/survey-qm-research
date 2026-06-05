@@ -6,7 +6,7 @@
 /* ---- 1. SUBMISSION ENDPOINT ----
    Paste your Google Apps Script Web App URL between the quotes.
    (See README.md → "Connect Google Sheets")                              */
-const ENDPOINT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxe_U_8WoGfKVtNkcUoiRPTSw52NixTSh7g42Eos4uael3jvf2newANXN3QVklIO-TseQ/exec";
 
 /* ---- 2. FORCED-DISTRIBUTION SHAPE (Guided Q-Sort) ----
    Columns run from -5 to +5. The numbers below are how many cards each
