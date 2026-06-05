@@ -1,1 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Meeting Practices in Bangladesh — Q-Study</title>
+<meta name="description" content="A Q-methodology research study on workplace meeting practices in Bangladesh." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Archivo:wght@400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<div class="grain"></div>
 
+<!-- ============ TOP BAR ============ -->
+<header class="topbar" id="topbar">
+  <div class="brand">
+    <span class="brand-mark">Q</span>
+    <span class="brand-text" data-i18n="brandText">Meeting Practices Study</span>
+  </div>
+  <div class="topbar-right">
+    <div class="progress-pips" id="progressPips" aria-hidden="true"></div>
+    <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">
+      <span class="lang-en">EN</span><span class="lang-sep">/</span><span class="lang-bn">বাং</span>
+    </button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ SCREEN: WELCOME ============ -->
+  <section class="screen active" data-screen="welcome">
+    <div class="wrap narrow welcome">
+      <p class="eyebrow" data-i18n="welcomeEyebrow">Academic Research · Q-Methodology</p>
+      <h1 class="title" data-i18n="welcomeTitle">From Meeting Fatigue to High-Performance Teams</h1>
+      <p class="subtitle" data-i18n="welcomeSubtitle">Understanding workplace meeting practices in Bangladesh</p>
+
+      <div class="lede">
+        <p data-i18n="welcomeLede">This is not a typical questionnaire. You will arrange <strong>40 viewpoints</strong> about workplace meetings into a ranking — from the ones you most agree with to the ones you most disagree with. There are no right answers; we want <em>your</em> perspective.</p>
+      </div>
+
+      <div class="meta-cards">
+        <div class="meta-card"><span class="mc-num">40</span><span class="mc-lbl" data-i18n="mcStatements">statements</span></div>
+        <div class="meta-card"><span class="mc-num">~12</span><span class="mc-lbl" data-i18n="mcMinutes">minutes</span></div>
+        <div class="meta-card"><span class="mc-num">100%</span><span class="mc-lbl" data-i18n="mcAnon">anonymous</span></div>
+      </div>
+
+      <div class="mode-pick">
+        <p class="mode-label" data-i18n="modeLabel">Choose how you'd like to sort:</p>
+        <div class="mode-options">
+          <button class="mode-opt selected" data-mode="guided" type="button">
+            <span class="mode-opt-title" data-i18n="modeGuidedTitle">Guided Q-Sort</span>
+            <span class="mode-opt-desc" data-i18n="modeGuidedDesc">The classic method — place cards into a fixed pyramid. Most rigorous.</span>
+            <span class="mode-badge" data-i18n="modeRec">Recommended</span>
+          </button>
+          <button class="mode-opt" data-mode="flexible" type="button">
+            <span class="mode-opt-title" data-i18n="modeFlexTitle">Flexible Rating</span>
+            <span class="mode-opt-desc" data-i18n="modeFlexDesc">Rate each statement freely from −5 to +5. Faster, fewer constraints.</span>
+          </button>
+        </div>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" id="consentBox" />
+        <span data-i18n="consentText">I am 18+ and voluntarily agree to take part. My anonymous responses may be used for academic research and publication.</span>
+      </label>
+
+      <div class="resume-row" id="resumeRow" hidden>
+        <span data-i18n="resumeText">We found a saved session.</span>
+        <button class="link-btn" id="resumeBtn" type="button" data-i18n="resumeBtn">Resume</button>
+        <button class="link-btn muted" id="freshBtn" type="button" data-i18n="freshBtn">Start over</button>
+      </div>
+
+      <button class="cta" id="beginBtn" type="button" disabled data-i18n="beginBtn">Begin the study →</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: DEMOGRAPHICS ============ -->
+  <section class="screen" data-screen="demographics">
+    <div class="wrap narrow">
+      <p class="eyebrow" data-i18n="demoEyebrow">A little about you</p>
+      <h2 class="h2" data-i18n="demoTitle">Your context</h2>
+      <p class="muted-p" data-i18n="demoSub">These help us compare viewpoints across roles and sectors. No names, no contact details.</p>
+
+      <div class="form-grid" id="demoForm"></div>
+
+      <div class="nav-row">
+        <button class="ghost" data-nav="back" type="button" data-i18n="back">← Back</button>
+        <button class="cta" data-nav="next" id="demoNext" type="button" data-i18n="continue">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: INSTRUCTIONS ============ -->
+  <section class="screen" data-screen="instructions">
+    <div class="wrap narrow">
+      <p class="eyebrow" data-i18n="howEyebrow">How it works</p>
+      <h2 class="h2" id="howTitle">Three quick steps</h2>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step-no">1</span>
+          <div>
+            <h3 data-i18n="howStep1Title">Sort into three piles</h3>
+            <p data-i18n="howStep1Desc">First glance at each card and drop it into <em>Agree</em>, <em>Neutral</em>, or <em>Disagree</em>. Quick gut feeling.</p>
+          </div>
+        </li>
+        <li class="step" id="stepFineGuided">
+          <span class="step-no">2</span>
+          <div>
+            <h3 data-i18n="howStep2Title">Build the pyramid</h3>
+            <p data-i18n="howStep2Desc">Place every card into the grid from −5 (strongly disagree) to +5 (strongly agree). Each column holds a fixed number of cards, so you'll compare and decide what matters most.</p>
+          </div>
+        </li>
+        <li class="step" id="stepFineFlex" hidden>
+          <span class="step-no">2</span>
+          <div>
+            <h3 data-i18n="howStep2FlexTitle">Rate each statement</h3>
+            <p data-i18n="howStep2FlexDesc">Give every statement a score from −5 to +5. No limits on how many can share a score.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-no">3</span>
+          <div>
+            <h3 data-i18n="howStep3Title">Tell us why</h3>
+            <p data-i18n="howStep3Desc">A few short questions about your strongest choices, and you're done.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="scale-legend">
+        <span class="sl-neg" data-i18n="legendDisagree">Strongly disagree</span>
+        <span class="sl-bar"></span>
+        <span class="sl-pos" data-i18n="legendAgree">Strongly agree</span>
+      </div>
+
+      <div class="nav-row">
+        <button class="ghost" data-nav="back" type="button" data-i18n="back">← Back</button>
+        <button class="cta" data-nav="next" type="button" data-i18n="startSorting">Start sorting →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: COARSE SORT ============ -->
+  <section class="screen" data-screen="coarse">
+    <div class="wrap coarse-wrap">
+      <div class="coarse-head">
+        <h2 class="h2 tight" data-i18n="coarseTitle">First impressions</h2>
+        <p class="muted-p" data-i18n="coarseSub">Card <b id="coarseIdx">1</b> of 40 — where does this belong?</p>
+        <div class="coarse-progress"><span id="coarseFill"></span></div>
+      </div>
+
+      <div class="card-stage" id="cardStage"></div>
+
+      <div class="bucket-row">
+        <button class="bucket bucket-dis" data-bucket="-1" type="button">
+          <span class="bk-icon">✕</span><span data-i18n="bucketDisagree">Disagree</span>
+          <span class="bk-count" id="cntDis">0</span>
+        </button>
+        <button class="bucket bucket-neu" data-bucket="0" type="button">
+          <span class="bk-icon">~</span><span data-i18n="bucketNeutral">Neutral</span>
+          <span class="bk-count" id="cntNeu">0</span>
+        </button>
+        <button class="bucket bucket-agr" data-bucket="1" type="button">
+          <span class="bk-icon">✓</span><span data-i18n="bucketAgree">Agree</span>
+          <span class="bk-count" id="cntAgr">0</span>
+        </button>
+      </div>
+
+      <div class="coarse-nav">
+        <button class="link-btn" id="coarseUndo" type="button" data-i18n="undo">↶ Undo last</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: FINE SORT (GUIDED GRID) ============ -->
+  <section class="screen" data-screen="fine">
+    <div class="wrap fine-wrap">
+      <div class="fine-head">
+        <h2 class="h2 tight" data-i18n="fineTitle">Build your ranking</h2>
+        <p class="muted-p"><span id="fineRemaining">40</span> <span data-i18n="fineRemaining">cards left to place</span></p>
+      </div>
+
+      <div class="fine-layout">
+        <aside class="tray" id="tray">
+          <div class="tray-head">
+            <span data-i18n="trayTitle">Cards to place</span>
+            <div class="tray-filter" id="trayFilter">
+              <button class="tf-btn active" data-filter="all" type="button" data-i18n="tfAll">All</button>
+              <button class="tf-btn" data-filter="1" type="button" data-i18n="tfAgr">Agree</button>
+              <button class="tf-btn" data-filter="0" type="button" data-i18n="tfNeu">Neutral</button>
+              <button class="tf-btn" data-filter="-1" type="button" data-i18n="tfDis">Disagree</button>
+            </div>
+          </div>
+          <div class="tray-cards" id="trayCards"></div>
+        </aside>
+
+        <div class="grid-scroll">
+          <div class="grid-board" id="gridBoard"></div>
+        </div>
+      </div>
+
+      <div class="nav-row sticky-nav">
+        <button class="ghost" data-nav="back" type="button" data-i18n="back">← Back</button>
+        <button class="cta" id="fineNext" type="button" disabled data-i18n="continue">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: FLEXIBLE RATING ============ -->
+  <section class="screen" data-screen="flex">
+    <div class="wrap narrow">
+      <div class="fine-head">
+        <h2 class="h2 tight" data-i18n="flexTitle">Rate each statement</h2>
+        <p class="muted-p"><span id="flexDone">0</span>/40 <span data-i18n="flexRated">rated</span></p>
+      </div>
+      <div class="flex-list" id="flexList"></div>
+      <div class="nav-row sticky-nav">
+        <button class="ghost" data-nav="back" type="button" data-i18n="back">← Back</button>
+        <button class="cta" id="flexNext" type="button" disabled data-i18n="continue">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: REFLECTION ============ -->
+  <section class="screen" data-screen="reflect">
+    <div class="wrap narrow">
+      <p class="eyebrow" data-i18n="reflectEyebrow">Almost done</p>
+      <h2 class="h2" data-i18n="reflectTitle">In your own words</h2>
+
+      <div class="reflect-block" id="reflectTop"></div>
+      <div class="reflect-block" id="reflectBottom"></div>
+
+      <label class="field-label" data-i18n="reflectExtraLabel">Anything else about meetings in your workplace? (optional)</label>
+      <textarea id="reflectExtra" class="ta" rows="4" placeholder=""></textarea>
+
+      <div class="nav-row">
+        <button class="ghost" data-nav="back" type="button" data-i18n="back">← Back</button>
+        <button class="cta" id="submitBtn" type="button" data-i18n="submit">Submit my responses →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: DONE ============ -->
+  <section class="screen" data-screen="done">
+    <div class="wrap narrow done">
+      <div class="done-mark">✓</div>
+      <h2 class="h2" data-i18n="doneTitle">Thank you</h2>
+      <p class="muted-p" id="doneMsg" data-i18n="doneMsg">Your perspective has been recorded. It will help shape a Bangladesh-specific Meeting Excellence Framework.</p>
+      <div class="done-actions">
+        <button class="ghost" id="downloadBtn" type="button" data-i18n="download">Download my responses</button>
+      </div>
+      <p class="tiny" id="doneRef"></p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: SUBMIT ERROR ============ -->
+  <section class="screen" data-screen="error">
+    <div class="wrap narrow done">
+      <div class="done-mark err">!</div>
+      <h2 class="h2" data-i18n="errTitle">Couldn't send</h2>
+      <p class="muted-p" id="errMsg" data-i18n="errMsg">Something went wrong sending your responses. Your answers are saved on this device — please check your connection and try again.</p>
+      <div class="done-actions">
+        <button class="cta" id="retryBtn" type="button" data-i18n="retry">Try again</button>
+        <button class="ghost" id="downloadBtn2" type="button" data-i18n="download">Download my responses</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- floating card used during pointer drag -->
+<div id="dragGhost" class="drag-ghost" aria-hidden="true"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
