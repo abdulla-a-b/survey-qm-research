@@ -35,6 +35,7 @@
   function applyLang(){
     document.body.dataset.lang = state.lang;
     $$("[data-i18n]").forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+    $$("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.dataset.i18nPh)); });
     // re-render dynamic screens that hold statement text
     renderProgress();
     if (state.screen === "coarse") renderCoarseHead(), renderCurrentCard(true);
@@ -43,6 +44,7 @@
     if (state.screen === "flex") renderFlex();
     if (state.screen === "reflect") renderReflect();
     if (state.screen === "demographics") renderDemoForm();
+    if (state.screen === "done" && state._certShown) drawCertificate();
   }
 
   /* ---------------- persistence ---------------- */
@@ -475,7 +477,248 @@
     else { show("error"); }
   }
 
-  function onDone(){ $("#doneRef").textContent = "Ref: " + state.responseId; }
+  function onDone(){
+    const certNo = certNumber();
+    $("#doneRef").textContent = "Ref: " + state.responseId;
+    const zone = $("#certZone");
+    if (typeof CERT !== "undefined" && CERT && CERT.enabled){
+      zone.hidden = false;
+      // reset to name-entry state each time done is shown fresh
+      if (!state._certShown){
+        $("#certNameRow").hidden = false;
+        $("#certPreview").hidden = true;
+      }
+      if (state.certName) $("#certName").value = state.certName;
+    } else {
+      zone.hidden = true;
+    }
+  }
+
+  /* ---------------- PARTICIPATION CERTIFICATE ---------------- */
+  function certNumber(){
+    if (!state._certNo){
+      const yr = new Date().getFullYear();
+      const tail = (state.responseId || "").replace(/[^A-Z0-9]/gi,"").slice(-6).toUpperCase() ||
+                   Math.random().toString(36).slice(2,8).toUpperCase();
+      const pfx = (typeof CERT!=="undefined" && CERT.idPrefix) ? CERT.idPrefix : "CERT";
+      state._certNo = `${pfx}-${yr}-${tail}`;
+    }
+    return state._certNo;
+  }
+
+  async function ensureCertFonts(){
+    if (!document.fonts || !document.fonts.load) return;
+    const fams = [
+      '900 64px "Fraunces"', '700 48px "Fraunces"', '600 30px "Fraunces"',
+      '700 30px "Archivo"', '600 24px "Archivo"', '500 22px "Archivo"', '800 20px "Archivo"',
+      '700 40px "Noto Serif Bengali"', '600 26px "Noto Serif Bengali"', '500 22px "Noto Serif Bengali"'
+    ];
+    try { await Promise.all(fams.map(f=>document.fonts.load(f))); await document.fonts.ready; }
+    catch(e){ /* fall back to whatever is available */ }
+  }
+
+  async function generateCertificate(){
+    const name = ($("#certName").value || "").trim();
+    if (!name){ toast(t("certNeedName")); $("#certName").focus(); return; }
+    state.certName = name; save();
+    const btn = $("#certGenBtn"); const old = btn.textContent;
+    btn.disabled = true; btn.textContent = "…";
+    await ensureCertFonts();
+    drawCertificate();
+    state._certShown = true;
+    $("#certNameRow").hidden = true;
+    $("#certPreview").hidden = false;
+    btn.disabled = false; btn.textContent = old;
+    $("#certPreview").scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
+  function drawCertificate(){
+    const canvas = $("#certCanvas"); if (!canvas) return;
+    const bn = state.lang === "bn";
+    const W = 1600, H = 1130, S = 2;            // logical size + retina scale
+    canvas.width = W*S; canvas.height = H*S;
+    canvas.style.aspectRatio = W + " / " + H;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(S,S);
+
+    const TEAL="#0C4A47", TEAL2="#0F5C58", LIME="#84CC16", CREAM="#FBF6EA",
+          INK="#13312E", MUTE="#5C726E", GOLD="#B9892F";
+    const disp = bn ? "Noto Serif Bengali" : "Fraunces";
+    const body = bn ? "Noto Serif Bengali" : "Archivo";
+    const center = W/2;
+
+    // background
+    ctx.fillStyle = CREAM; ctx.fillRect(0,0,W,H);
+    // subtle inner panel
+    ctx.fillStyle = "#FFFDF7"; roundRect(ctx,34,34,W-68,H-68,10); ctx.fill();
+
+    // double frame
+    ctx.strokeStyle = TEAL; ctx.lineWidth = 6;
+    roundRect(ctx,40,40,W-80,H-80,8); ctx.stroke();
+    ctx.strokeStyle = LIME; ctx.lineWidth = 2;
+    roundRect(ctx,56,56,W-112,H-112,6); ctx.stroke();
+    // corner ticks
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 3;
+    cornerTicks(ctx, 40,40, W-80, H-80, 34);
+
+    // header brand
+    ctx.textAlign = "center";
+    // Q mark badge
+    ctx.fillStyle = TEAL; roundRect(ctx, center-26, 92, 52, 52, 12); ctx.fill();
+    ctx.fillStyle = LIME; ctx.font = '900 34px "Fraunces", serif';
+    ctx.textBaseline = "middle"; ctx.fillText("Q", center, 120);
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = MUTE; ctx.font = '800 18px "Archivo", sans-serif';
+    ctx.fillText(spaced((typeof CERT!=="undefined"&&CERT.org)?CERT.org:"Workforce Research"), center, 178);
+
+    // title
+    ctx.fillStyle = INK; ctx.font = `700 60px "${disp}", serif`;
+    ctx.fillText(t("certHeading"), center, 256);
+    // lime underline rule
+    ctx.strokeStyle = LIME; ctx.lineWidth = 4; ctx.beginPath();
+    ctx.moveTo(center-120, 280); ctx.lineTo(center+120, 280); ctx.stroke();
+
+    // presented to
+    ctx.fillStyle = MUTE; ctx.font = `500 24px "${body}", sans-serif`;
+    ctx.fillText(t("certPresentedTo"), center, 340);
+
+    // NAME
+    ctx.fillStyle = TEAL; ctx.font = `700 64px "${disp}","Noto Serif Bengali",serif`;
+    const nm = state.certName || t("certFallbackName");
+    fitText(ctx, nm, center, 414, W-360, 64, 36, disp);
+    // name underline
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(center-300, 444); ctx.lineTo(center+300, 444); ctx.stroke();
+
+    // body line
+    ctx.fillStyle = INK; ctx.font = `500 24px "${body}", sans-serif`;
+    ctx.fillText(t("certBody"), center, 498);
+
+    // study title (italic-ish, wrapped)
+    ctx.fillStyle = TEAL2; ctx.font = `600 27px "${disp}", serif`;
+    const titleLines = wrapLines(ctx, t("certStudyTitle"), W-460);
+    let ty = 542;
+    titleLines.forEach(line=>{ ctx.fillText(line, center, ty); ty += 36; });
+
+    // method line
+    const method = state.mode === "flexible" ? t("certMethodFlex") : t("certMethodGuided");
+    ctx.fillStyle = MUTE; ctx.font = `500 22px "${body}", sans-serif`;
+    ctx.fillText("— " + method + " —", center, ty + 18);
+
+    // contribution
+    ctx.fillStyle = INK; ctx.font = `500 21px "${body}", sans-serif`;
+    const contribLines = wrapLines(ctx, t("certContribution"), W-560);
+    let cy = ty + 60;
+    contribLines.forEach(line=>{ ctx.fillText(line, center, cy); cy += 28; });
+
+    // ---- verified seal (right) ----
+    drawSeal(ctx, W-250, H-250, 92, {TEAL,LIME,GOLD,CREAM}, t("certVerified"), bn?"Noto Serif Bengali":"Archivo");
+
+    // ---- footer: issued date + cert no (left) ----
+    const dateStr = formatDate(new Date(), bn);
+    ctx.textAlign = "left";
+    ctx.fillStyle = MUTE; ctx.font = `700 14px "Archivo", sans-serif`;
+    ctx.fillText(spaced(t("certIssued")), 120, H-150);
+    ctx.fillStyle = INK; ctx.font = `600 22px "${body}", sans-serif`;
+    ctx.fillText(dateStr, 120, H-120);
+    ctx.fillStyle = MUTE; ctx.font = `700 14px "Archivo", sans-serif`;
+    ctx.fillText(spaced(t("certCertNo")), 120, H-86);
+    ctx.fillStyle = INK; ctx.font = `700 20px "Archivo", sans-serif`;
+    ctx.fillText(certNumber(), 120, H-58);
+
+    // ---- footer: issuer signature (center-right) ----
+    const sigX0 = center+40, sigX1 = center+360, sigCx = (sigX0+sigX1)/2;
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath();
+    ctx.moveTo(sigX0, H-120); ctx.lineTo(sigX1, H-120); ctx.stroke();
+    ctx.textAlign = "center";
+    const iName = (typeof CERT!=="undefined"&&CERT.issuerName)?CERT.issuerName:"";
+    const iTitle = (typeof CERT!=="undefined"&&CERT.issuerTitle)?CERT.issuerTitle:"";
+    if (iName){ ctx.fillStyle = INK; ctx.font = `600 22px "${disp}", serif`; ctx.fillText(iName, sigCx, H-90); }
+    if (iTitle){ ctx.fillStyle = MUTE; ctx.font = `600 16px "${body}", sans-serif`; ctx.fillText(iTitle, sigCx, H-64); }
+    ctx.textAlign = "left";
+  }
+
+  /* canvas helpers */
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function cornerTicks(ctx,x,y,w,h,len){
+    const c=[[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]];
+    c.forEach(([cx,cy,sx,sy])=>{
+      ctx.beginPath(); ctx.moveTo(cx, cy+sy*len); ctx.lineTo(cx,cy); ctx.lineTo(cx+sx*len, cy); ctx.stroke();
+    });
+  }
+  function spaced(s){ return String(s).toUpperCase().split("").join("\u200a\u200a"); }
+  function wrapLines(ctx, text, maxW){
+    const words = String(text).split(/\s+/); const lines=[]; let line="";
+    words.forEach(w=>{
+      const test = line ? line+" "+w : w;
+      if (ctx.measureText(test).width > maxW && line){ lines.push(line); line=w; }
+      else line = test;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function fitText(ctx, text, cx, y, maxW, size, minSize, fam){
+    let s = size;
+    do { ctx.font = `700 ${s}px "${fam}","Noto Serif Bengali",serif`;
+         if (ctx.measureText(text).width <= maxW) break; s -= 2; } while (s > minSize);
+    ctx.textAlign = "center"; ctx.fillText(text, cx, y);
+  }
+  function formatDate(d, bn){
+    const months = bn
+      ? ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"]
+      : ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const toBn = n => bn ? String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]) : String(n);
+    return `${toBn(d.getDate())} ${months[d.getMonth()]} ${toBn(d.getFullYear())}`;
+  }
+  function drawSeal(ctx, cx, cy, r, c, label, fam){
+    ctx.save();
+    // outer ring
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=c.TEAL; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r-7,0,Math.PI*2); ctx.lineWidth=2; ctx.strokeStyle=c.LIME; ctx.stroke();
+    // notched edge
+    ctx.strokeStyle=c.GOLD; ctx.lineWidth=2;
+    for(let i=0;i<40;i++){ const a=i/40*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*(r+1),cy+Math.sin(a)*(r+1));
+      ctx.lineTo(cx+Math.cos(a)*(r+8),cy+Math.sin(a)*(r+8)); ctx.stroke(); }
+    // inner disc
+    ctx.beginPath(); ctx.arc(cx,cy,r-26,0,Math.PI*2); ctx.fillStyle=c.CREAM; ctx.fill();
+    // check mark
+    ctx.strokeStyle=c.TEAL; ctx.lineWidth=8; ctx.lineCap="round"; ctx.lineJoin="round";
+    ctx.beginPath(); ctx.moveTo(cx-22,cy-4); ctx.lineTo(cx-6,cy+14); ctx.lineTo(cx+24,cy-22); ctx.stroke();
+    ctx.lineCap="butt";
+    // label
+    ctx.textAlign="center"; ctx.fillStyle=c.TEAL; ctx.font=`800 11px "${fam}", sans-serif`;
+    ctx.fillText(label, cx, cy+r-12);
+    ctx.restore();
+  }
+
+  function downloadCertificate(){
+    const canvas = $("#certCanvas");
+    const safe = (state.certName||"participant").replace(/[^\w\u0980-\u09FF]+/g,"_").slice(0,40);
+    canvas.toBlob(blob=>{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `certificate-${safe}-${certNumber()}.png`; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1500);
+    }, "image/png");
+  }
+
+  function printCertificate(){
+    const dataURL = $("#certCanvas").toDataURL("image/png");
+    const w = window.open("", "_blank");
+    if (!w){ toast("Pop-up blocked — use Download instead."); return; }
+    w.document.write(
+      '<!doctype html><title>Certificate</title>' +
+      '<style>@page{size:landscape;margin:0}html,body{margin:0;height:100%}' +
+      'img{width:100%;height:auto;display:block}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>' +
+      '<img src="'+dataURL+'" onload="setTimeout(function(){window.focus();window.print();},250)">'
+    );
+    w.document.close();
+  }
 
   function downloadResponses(){
     const blob = new Blob([JSON.stringify(state.lastPayload||buildPayload(),null,2)],{type:"application/json"});
@@ -510,6 +753,12 @@
     $("#retryBtn").addEventListener("click", submit);
     $("#downloadBtn").addEventListener("click", downloadResponses);
     $("#downloadBtn2").addEventListener("click", downloadResponses);
+
+    // certificate
+    const cg = $("#certGenBtn"); if (cg) cg.addEventListener("click", generateCertificate);
+    const cd = $("#certDownloadBtn"); if (cd) cd.addEventListener("click", downloadCertificate);
+    const cp = $("#certPrintBtn"); if (cp) cp.addEventListener("click", printCertificate);
+    const cn = $("#certName"); if (cn) cn.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); generateCertificate(); }});
 
     $("#langToggle").addEventListener("click",()=>{ state.lang = state.lang==="en"?"bn":"en"; applyLang(); save(); });
   }
